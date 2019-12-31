@@ -1,0 +1,1 @@
+python main.py --Data HOTEL --model R50 --dim 256 --lr 1e-1 --order 0 --i 4 --lam 0.1
