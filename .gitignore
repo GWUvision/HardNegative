@@ -1,8 +1,15 @@
 *.out
+
 .ipynb_checkpoints/
+
 *.pth
+
 _result/
+
 _result_Hotel/
+
 _result_old/
+
 _test_result/
+
 T/
