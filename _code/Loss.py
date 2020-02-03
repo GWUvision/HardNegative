@@ -54,20 +54,39 @@ class EPHNLoss(Module):
         D_detach_N = Dist.clone().detach()
         D_detach_N[Same]=-1
         if self.semi:
-            D_detach_N[(D_detach_N>(V_pos.repeat(N,1).t()))&Diff]=-1#extracting SHN
-        V_neg, I_neg = D_detach_N.max(1)
+            V_neg, I_neg = D_detach_N.max(1)
+            Neg_tmp = Dist[torch.arange(0,N), I_neg]
+            Neg_log = Neg_tmp.clone().detach().cpu()
             
-        # prevent duplicated pairs
-        Mask_not_drop_neg = (V_neg>0)
+            D_detach_N[(D_detach_N>(V_pos.repeat(N,1).t()))&Diff]=-1#extracting SHN
+            
+            V_neg, I_neg = D_detach_N.max(1)
+            
+            # prevent duplicated pairs
+            Mask_not_drop_neg = (V_neg>0)
 
-        # extracting neg score
-        Neg = Dist[torch.arange(0,N), I_neg]
-        Neg_log = Neg.clone().detach().cpu()
+            # extracting neg score
+            Neg = Dist[torch.arange(0,N), I_neg]
+            
+            # Masking
+            Mask_not_drop = Mask_not_drop_pos&Mask_not_drop_neg
+            Mask1 = (Neg<Pos) & Mask_not_drop
+            Mask2 = (Neg_tmp>Pos) & Mask_not_drop
+            
+        else:
+            V_neg, I_neg = D_detach_N.max(1)
+
+            # prevent duplicated pairs
+            Mask_not_drop_neg = (V_neg>0)
+
+            # extracting neg score
+            Neg = Dist[torch.arange(0,N), I_neg]
+            Neg_log = Neg.clone().detach().cpu()
         
-        # Masking
-        Mask_not_drop = Mask_not_drop_pos&Mask_not_drop_neg
-        Mask1 = (Neg<Pos) & Mask_not_drop
-        Mask2 = (Neg>Pos) & Mask_not_drop
+            # Masking
+            Mask_not_drop = Mask_not_drop_pos&Mask_not_drop_neg
+            Mask1 = (Neg<Pos) & Mask_not_drop
+            Mask2 = (Neg>Pos) & Mask_not_drop
         
         if self.order==1:
             # triplets

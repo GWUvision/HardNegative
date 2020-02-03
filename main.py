@@ -1,5 +1,5 @@
 import argparse
-from _code_Hotel.Train import learn
+from _code.Train import learn
 import os, torch
     
 parser = argparse.ArgumentParser(description='running parameters')
@@ -11,12 +11,15 @@ parser.add_argument('--order', type=int, help='order')
 parser.add_argument('--lam', type=float, help='lambda')
 parser.add_argument('--g', type=int, help='times')
 parser.add_argument('--semi', type=int, help='semi')
+parser.add_argument('--ep', type=int, help='epochs')
 args = parser.parse_args()
 
 order = args.order
 lam = args.lam
 Data, model, dim, LR = args.Data, args.model, args.dim, args.lr
 Gsize = args.g
+ep = args.ep
+semi = (args.semi==1)
 
 if Data=='HOTEL':
     data_dict = torch.load('/SEAS/home/xuanhong/ICML2020/data_dict_emb.pth'.format(Data))
@@ -26,26 +29,29 @@ else:
 print(order)
 
 if order==1:
-    if args.semi==1:
-        dst = '_result/{}_{}/SemiO1_LR_{:.0e}_MP_ep100/G{}/'.format(Data,model,LR,Gsize)
+    if semi:
+        dst = '_result/{}_{}/SemiO1_LR_{:.0e}_MP_ep{}/G{}/'.format(Data,model,LR,ep,Gsize)
     else:
-        dst = '_result/{}_{}/Order1_LR_{:.0e}_MP_ep100/G{}/'.format(Data,model,LR,Gsize)
+        dst = '_result/{}_{}/Order1_LR_{:.0e}_MP_ep{}/G{}/'.format(Data,model,LR,ep,Gsize)
 elif order==2:
-    dst = '_result/{}_{}/Order2_LR_{:.0e}_MP/G{}/'.format(Data,model,LR,Gsize)
+    dst = '_result/{}_{}/Order2_LR_{:.0e}_MP_ep{}/G{}/'.format(Data,model,LR,ep,Gsize)
 elif order==3:
-    dst = '_result/{}_{}/Comb_LR_{:.0e}_lam{}_MP_ep200/G{}/'.format(Data,model,LR,lam,Gsize)
+    dst = '_result/{}_{}/Comb_LR_{:.0e}_lam{}_MP_ep{}/G{}/'.format(Data,model,LR,lam,ep,Gsize)
+elif order==0:
+    dst = '_result/{}_{}/Order1C_LR_{:.0e}_lam{}_MP_ep{}/G{}/'.format(Data,model,LR,lam,ep,Gsize)
 else:
-    dst = '_result/{}_{}/Order1C_LR_{:.0e}_lam{}_MP_ep200/G{}/'.format(Data,model,LR,lam,Gsize)
+    print('error in order')
 
 
 print(dst)
 x = learn(dst, Data, data_dict)
 x.batch_size = 512
-x.Graph_size = 2
+x.Graph_size = Gsize
 x.init_lr = LR
 x.criterion.order = order
 x.criterion.lam = lam
-if args.semi==1 and order==1:
+if semi and order==1:
     x.criterion.semi=True
-x.run(dim, model, num_epochs=200)
+    print('semi')
+x.run(dim, model, num_epochs=ep)
 print(dst)

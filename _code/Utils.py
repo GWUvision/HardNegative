@@ -29,15 +29,19 @@ def RunAcc2(src, rank):
 
 def eva(dsets, model):
     Fvecs = []
-    dataLoader = torch.utils.data.DataLoader(dsets, batch_size=2500, sampler=SequentialSampler(dsets), num_workers=48)
-    torch.set_grad_enabled(False)
-    model.eval()
-    for data in dataLoader:
-        inputs_bt, labels_bt = data # <FloatTensor> <LongTensor>
-        fvec = model(inputs_bt.cuda())
-        fvec = norml2(fvec)
-        fvec = fvec.cpu()
-        Fvecs.append(fvec)
+    dataLoader = torch.utils.data.DataLoader(dsets, batch_size=3000, sampler=SequentialSampler(dsets), num_workers=48)
+    
+    with torch.set_grad_enabled(False):
+        model.eval()
+        i=0
+        for data in dataLoader:
+            inputs_bt, labels_bt = data # <FloatTensor> <LongTensor>
+            fvec = model(inputs_bt.cuda())
+            fvec = norml2(fvec)
+            fvec = fvec.cpu()
+            Fvecs.append(fvec)
+            i+=1
+            print('{} -- {}'.format(i,len(dataLoader)), end='\r')
             
     return torch.cat(Fvecs,0)
 
