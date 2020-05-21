@@ -29,7 +29,7 @@ def RunAcc2(src, rank):
 
 def eva(dsets, model):
     Fvecs = []
-    dataLoader = torch.utils.data.DataLoader(dsets, batch_size=3000, sampler=SequentialSampler(dsets), num_workers=48)
+    dataLoader = torch.utils.data.DataLoader(dsets, batch_size=400, sampler=SequentialSampler(dsets), num_workers=48)
     
     with torch.set_grad_enabled(False):
         model.eval()
